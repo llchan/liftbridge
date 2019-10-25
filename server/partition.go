@@ -1097,8 +1097,8 @@ func natsToProtoMessage(msg *nats.Msg, leaderEpoch uint64) *proto.Message {
 	if message != nil {
 		m.Key = message.Key
 		m.Value = message.Value
-		for key, value := range message.Headers {
-			m.Headers[key] = value
+		for _, kv := range message.Headers {
+			m.Headers[kv.Key] = kv.Value
 		}
 		m.AckInbox = message.AckInbox
 		m.CorrelationID = message.CorrelationId

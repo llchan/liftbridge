@@ -267,13 +267,17 @@ func (a *apiServer) subscribe(ctx context.Context, partition *partition,
 				return
 			}
 			headers := m.Headers()
+			headersList := make([]*client.MessageHeader, len(headers))
+			for k, v := range headers {
+				headersList = append(headersList, &client.MessageHeader{Key: k, Value: v})
+			}
 			var (
 				msg = &client.Message{
 					Offset:    offset,
 					Key:       m.Key(),
 					Value:     m.Value(),
 					Timestamp: timestamp,
-					Headers:   headers,
+					Headers:   headersList,
 					Subject:   string(headers["subject"]),
 					Reply:     string(headers["reply"]),
 				}

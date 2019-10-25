@@ -245,18 +245,18 @@ func (m *metadataAPI) createMetadataResponse(streams []string) *client.FetchMeta
 			// Stream does not exist.
 			metadata[i] = &client.StreamMetadata{
 				Name:  name,
-				Error: client.StreamMetadata_UNKNOWN_STREAM,
+				Error: client.StreamMetadataError_UNKNOWN_STREAM,
 			}
 		} else {
-			partitions := make(map[int32]*client.PartitionMetadata)
+			partitions := make([]*client.PartitionMetadata, len(stream.partitions))
 			for id, partition := range stream.partitions {
 				leader, _ := partition.GetLeader()
-				partitions[id] = &client.PartitionMetadata{
+				partitions = append(partitions, &client.PartitionMetadata{
 					Id:       id,
 					Leader:   leader,
 					Replicas: partition.GetReplicas(),
 					Isr:      partition.GetISR(),
-				}
+				})
 			}
 			metadata[i] = &client.StreamMetadata{
 				Name:       name,

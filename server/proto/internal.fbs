@@ -1,0 +1,162 @@
+namespace proto;
+
+table ServerState {
+  serverID : string (id: 0);
+}
+
+enum Op : ubyte {
+  CREATE_PARTITION = 0,
+  SHRINK_ISR       = 1,
+  REPORT_LEADER    = 2,
+  CHANGE_LEADER    = 3,
+  EXPAND_ISR       = 4,
+}
+
+table RaftLog {
+  op                : Op                (id: 0);
+  createPartitionOp : CreatePartitionOp (id: 1);
+  shrinkISROp       : ShrinkISROp       (id: 2);
+  changeLeaderOp    : ChangeLeaderOp    (id: 3);
+  expandISROp       : ExpandISROp       (id: 4);
+  // createPartitionOp : [ubyte] (id: 1, nested_flatbuffer: "CreatePartitionOp");
+  // shrinkISROp       : [ubyte] (id: 2, nested_flatbuffer: "ShrinkISROp");
+  // changeLeaderOp    : [ubyte] (id: 3, nested_flatbuffer: "ChangeLeaderOp");
+  // expandISROp       : [ubyte] (id: 4, nested_flatbuffer: "ExpandISROp");
+}
+
+table CreatePartitionOp {
+  partition : Partition (id: 0);
+}
+
+table CreatePartitionResponse {
+}
+
+table ShrinkISROp {
+  stream          : string (id: 0);
+  partition       : int    (id: 1);
+  replicaToRemove : string (id: 2);
+  leader          : string (id: 3);
+  leaderEpoch     : ulong  (id: 4);
+}
+
+table ShrinkISRResponse {
+}
+
+table ExpandISROp {
+  stream       : string (id: 0);
+  partition    : int    (id: 1);
+  replicaToAdd : string (id: 2);
+  leader       : string (id: 3);
+  leaderEpoch  : ulong  (id: 4);
+}
+
+table ExpandISRResponse {
+}
+
+table ReportLeaderOp {
+  stream      : string (id: 0);
+  partition   : int    (id: 1);
+  replica     : string (id: 2);
+  leader      : string (id: 3);
+  leaderEpoch : ulong  (id: 4);
+}
+
+table ReportLeaderResponse {
+}
+
+table ChangeLeaderOp {
+  stream    : string (id: 0);
+  partition : int    (id: 1);
+  leader    : string (id: 2);
+}
+
+table Partition {
+  subject           : string   (id: 0);
+  stream            : string   (id: 1);
+  id                : int      (id: 2);
+  group             : string   (id: 3);
+  replicationFactor : int      (id: 4);
+  replicas          : [string] (id: 5);
+  leader            : string   (id: 6);
+  isr               : [string] (id: 7);
+  leaderEpoch       : ulong    (id: 8);
+  epoch             : ulong    (id: 9);
+}
+
+// RaftJoinRequest is a request to join a Raft group.
+table RaftJoinRequest {
+  nodeID   : string (id: 0); // ID of the joining node.
+  nodeAddr : string (id: 1); // Address of the joining node.
+}
+
+// RaftJoinResponse is a response to a RaftJoinRequest.
+table RaftJoinResponse {
+  error : string (id: 0); // Error string, omitted if no error. 
+}
+
+table MetadataSnapshot {
+  partitions : [Partition] (id: 0);
+}
+
+table ReplicationRequest {
+  replicaID : string (id: 0);
+  offset    : long   (id: 1);
+}
+
+table LeaderEpochOffsetRequest {
+  leaderEpoch : ulong (id: 0);
+}
+
+table LeaderEpochOffsetResponse {
+  endOffset : long (id: 0);
+}
+
+table PropagatedRequest {
+  op                : Op                (id: 0);
+  createPartitionOp : CreatePartitionOp (id: 1);
+  shrinkISROp       : ShrinkISROp       (id: 2);
+  reportLeaderOp    : ReportLeaderOp    (id: 3);
+  expandISROp       : ExpandISROp       (id: 4);
+  // createPartitionOp : [ubyte] (id: 1, nested_flatbuffer: "CreatePartitionOp");
+  // shrinkISROp       : [ubyte] (id: 2, nested_flatbuffer: "ShrinkISROp");
+  // reportLeaderOp    : [ubyte] (id: 3, nested_flatbuffer: "ReportLeaderOp");
+  // expandISROp       : [ubyte] (id: 4, nested_flatbuffer: "ExpandISROp");
+}
+
+table Error {
+  code : uint   (id: 0);
+  msg  : string (id: 1);
+}
+
+table PropagatedResponse {
+  op                      : Op                      (id: 0);
+  error                   : Error                   (id: 1);
+  createPartitionResponse : CreatePartitionResponse (id: 2, deprecated);
+  shrinkISRResponse       : ShrinkISRResponse       (id: 3, deprecated);
+  reportLeaderResponse    : ReportLeaderResponse    (id: 4, deprecated);
+  expandISRResponse       : ExpandISRResponse       (id: 5, deprecated);
+  // createPartitionResponse : [ubyte] (id: 2, nested_flatbuffer: "CreatePartitionResponse", deprecated);
+  // shrinkISRResponse       : [ubyte] (id: 3, nested_flatbuffer: "ShrinkISRResponse", deprecated);
+  // reportLeaderResponse    : [ubyte] (id: 4, nested_flatbuffer: "ReportLeaderResponse", deprecated);
+  // expandISRResponse       : [ubyte] (id: 5, nested_flatbuffer: "ExpandISRResponse", deprecated);
+}
+
+table ServerInfoRequest {
+  id : string (id: 0);
+}
+
+table ServerInfoResponse {
+  id   : string (id: 0);
+  host : string (id: 1);
+  port : int    (id: 2);
+}
+
+table PartitionStatusRequest {
+  stream    : string (id: 0);
+  partition : int    (id: 1);
+}
+
+table PartitionStatusResponse {
+  exists   : bool (id: 0);
+  isLeader : bool (id: 1);
+}
